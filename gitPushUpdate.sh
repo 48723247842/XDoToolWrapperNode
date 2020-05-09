@@ -12,7 +12,7 @@ git config --global --unset user.name
 git config --global --unset user.email
 git config user.name "$GITHUB_USER_NAME"
 git config user.email "$GITHUB_USER_EMAIL"
-ssh-add -k "$GITHUB_PRIVATE_KEY_PATH"
+ssh-add -k $GITHUB_PRIVATE_KEY_PATH
 
 LastCommit=$(git log -1 --pretty="%B" | xargs)
 # https://stackoverflow.com/a/3626205
@@ -26,5 +26,5 @@ fi
 #echo "$NextCommitNumber"
 git add .
 git commit -m "$NextCommitNumber"
-git remote add origin "$GITHUB_SSH_REPOSITORY_URL"
+git remote add origin $GITHUB_SSH_REPOSITORY_URL
 git push origin master
