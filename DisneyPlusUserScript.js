@@ -50,6 +50,17 @@ function start_websocket_client() {
 }
 start_websocket_client();
 
+function try_websocket_send( javascript_object ) {
+	try { websocket_client.send( JSON.stringify( javascript_object ) ); }
+	catch( e ) {
+		console.log( e );
+		start_websocket_client();
+		setTimeout( function() {
+			try_websocket_send( javascript_object );
+		} , 1500 );
+	}
+}
+
 function get_svg_buttons() {
 	var svg_buttons = {};
 	var button_elements = document.querySelectorAll( "svg" );
@@ -114,15 +125,21 @@ function hook_control_buttons() {
 					last_update_time = current_time;
 					console.log( "Current Time == " + current_time );
 					console.log( "Total Time == " + total_time );
-					try {
-						websocket_client.send( JSON.stringify({
-							channel: "disney_plus" ,
-							message: "time_update" ,
-							current_time: current_time ,
-							total_time: total_time
-						}));
-					}
-					catch( e ) { console.log( e ); }
+					// try {
+					// 	websocket_client.send( JSON.stringify({
+					// 		channel: "disney_plus" ,
+					// 		message: "time_update" ,
+					// 		current_time: current_time ,
+					// 		total_time: total_time
+					// 	}));
+					// }
+					// catch( e ) { console.log( e ); }
+					try_websocket_send({
+						channel: "disney_plus" ,
+						message: "time_update" ,
+						current_time: current_time ,
+						total_time: total_time
+					});
 				}
 			}
 		});
@@ -153,21 +170,29 @@ function hook_control_buttons() {
 		// We Need To Somehow Detect if State == Paused or Playing
 		// 1.) Move Mouse to Center of Screen , if Time Updates Don't Happen , its paused ?
 		// 2.) svg_buttons[ "play" ].click();
-		try {
-			websocket_client.send( JSON.stringify({
-				channel: "disney_plus" ,
-				message: "mouse_inside_video_window" ,
-			}));
-		}
-		catch( e ) { console.log( e ); }
-	});
-	try {
-		websocket_client.send( JSON.stringify({
+		// try {
+		// 	websocket_client.send( JSON.stringify({
+		// 		channel: "disney_plus" ,
+		// 		message: "mouse_inside_video_window" ,
+		// 	}));
+		// }
+		// catch( e ) { console.log( e ); }
+		try_websocket_send({
 			channel: "disney_plus" ,
-			message: "agent_ready" ,
-		}));
-	}
-	catch( e ) { console.log( e ); }
+			message: "mouse_inside_video_window" ,
+		});
+	});
+	// try {
+	// 	websocket_client.send( JSON.stringify({
+	// 		channel: "disney_plus" ,
+	// 		message: "agent_ready" ,
+	// 	}));
+	// }
+	// catch( e ) { console.log( e ); }
+	try_websocket_send({
+		channel: "disney_plus" ,
+		message: "agent_ready" ,
+	});
 }
 
 function init() {

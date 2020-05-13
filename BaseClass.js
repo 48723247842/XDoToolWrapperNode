@@ -1,4 +1,3 @@
-//const exec = require( "child_process" ).execSync;
 require( "shelljs/global" );
 
 class XDoToolBase {
@@ -87,94 +86,195 @@ class XDoToolBase {
 	}
 
 	activateWindow() {
-		if ( !this.window_id ) { return; }
-		return this.exec( "xdotool windowactivate " + this.window_id );
+		return new Promise( function ( resolve , reject ) {
+			try {
+				if ( !this.window_id ) { resolve( false ); return; }
+				this.exec( "xdotool windowactivate " + this.window_id );
+				resolve();
+				return;
+			}
+			catch( error ) { console.log( error ); resolve( false ); return; }
+		}.bind( this ) );
 	}
 
 	focusWindow() {
-		if ( !this.window_id ) { return; }
-		return this.exec( "xdotool windowfocus " + this.window_id );
+		return new Promise( function ( resolve , reject ) {
+			try {
+				if ( !this.window_id ) { resolve( false ); return; }
+				this.exec( "xdotool windowfocus " + this.window_id );
+				resolve();
+				return;
+			}
+			catch( error ) { console.log( error ); resolve( false ); return; }
+		}.bind( this ) );
 	}
 
-	async refocusWindow() {
-		if ( !this.window_id ) { return; }
-		this.activateWindow();
-		await this.sleep( 300 );
-		this.focusWindow();
-		await this.sleep( 500 );
-		return;
+	refocusWindow() {
+		return new Promise( async function ( resolve , reject ) {
+			try {
+				if ( !this.window_id ) { return; }
+				await this.activateWindow();
+				await this.sleep( 300 );
+				await this.focusWindow();
+				await this.sleep( 500 );
+				resolve();
+				return;
+			}
+			catch( error ) { console.log( error ); resolve( false ); return; }
+		}.bind( this ) );
 	}
 
 	raiseWindow() {
-		if ( !this.window_id ) { return; }
-		return this.exec( "xdotool windowraise " + this.window_id );
+		return new Promise( function ( resolve , reject ) {
+			try {
+				if ( !this.window_id ) { resolve( false ); return; }
+				this.exec( "xdotool windowraise " + this.window_id );
+				resolve();
+				return;
+			}
+			catch( error ) { console.log( error ); resolve( false ); return; }
+		}.bind( this ) );
 	}
 
 	windowGeometry() {
-		if ( !this.window_id ) { return; }
-		this.refocusWindow();
-		let result = this.exec( "xdotool getactivewindow getwindowgeometry" );
-		result = result.split( "\n" );
-		if ( result.length < 3 ) { return; }
-		let pos = result[ 1 ].split( "  Position: " )[ 1 ].split( " (screen" )[ 0 ].split( "," );
-		let geom = result[ 2 ].split( "  Geometry: " )[ 1 ].split( "x" );
-		let centerX = ( parseInt( pos[ 0 ] ) + ( parseInt( pos[ 0 ] ) / 2 ) ).toString();
-		let centerY = ( parseInt( geom[ 1 ] ) / 2 ).toString();
-		this.window_geometry = {
-			position: { x: pos[ 0 ] , y: pos[ 1 ] } ,
-			geometry: { x: geom[ 0 ] , y: geom[ 1 ] } ,
-			center: { x: centerX , y: centerY }
-		};
-		return this.window_geometry;
+		return new Promise( async function ( resolve , reject ) {
+			try {
+				if ( !this.window_id ) { resolve( false ); return; }
+				await this.refocusWindow();
+				let result = this.exec( "xdotool getactivewindow getwindowgeometry" );
+				result = result.split( "\n" );
+				if ( result.length < 3 ) { return; }
+				let pos = result[ 1 ].split( "  Position: " )[ 1 ].split( " (screen" )[ 0 ].split( "," );
+				let geom = result[ 2 ].split( "  Geometry: " )[ 1 ].split( "x" );
+				let centerX = ( parseInt( pos[ 0 ] ) + ( parseInt( pos[ 0 ] ) / 2 ) ).toString();
+				let centerY = ( parseInt( geom[ 1 ] ) / 2 ).toString();
+				this.window_geometry = {
+					position: { x: pos[ 0 ] , y: pos[ 1 ] } ,
+					geometry: { x: geom[ 0 ] , y: geom[ 1 ] } ,
+					center: { x: centerX , y: centerY }
+				};
+				resolve( this.window_geometry );
+				return;
+			}
+			catch( error ) { console.log( error ); resolve( false ); return; }
+		}.bind( this ) );
 	}
 
 	unmaximizeWindow() {
-		if ( !this.window_id ) { return; }
-		this.refocusWindow();
-		return this.exec( "wmctrl -ir " + this.window_id + " -b remove,maximized_ver,maximized_horz" );
+		return new Promise( async function ( resolve , reject ) {
+			try {
+				if ( !this.window_id ) { resolve( false ); return; }
+				await this.refocusWindow();
+				this.exec( "wmctrl -ir " + this.window_id + " -b remove,maximized_ver,maximized_horz" );
+				resolve();
+				return;
+			}
+			catch( error ) { console.log( error ); resolve( false ); return; }
+		}.bind( this ) );
 	}
 
 	maximizeWindow() {
-		if ( !this.window_id ) { return; }
-		this.refocusWindow();
-		return this.exec( "xdotool key F11" );
+		return new Promise( async function ( resolve , reject ) {
+			try {
+				if ( !this.window_id ) { resolve( false ); return; }
+				await this.refocusWindow();
+				this.exec( "xdotool key F11" );
+				resolve();
+				return;
+			}
+			catch( error ) { console.log( error ); resolve( false ); return; }
+		}.bind( this ) );
 	}
 
 	fullScreen() {
-		this.maximizeWindow();
+		return new Promise( async function ( resolve , reject ) {
+			try {
+				await this.maximizeWindow()
+				resolve();
+				return;
+			}
+			catch( error ) { console.log( error ); resolve( false ); return; }
+		}.bind( this ) );
 	}
 
 	moveMouse( x , y ) {
-		this.refocusWindow();
-		x = x.toString() || "0";
-		y = y.toString() || "0";
-		return this.exec( "xdotool mousemove " + x + " " + y );
+		return new Promise( async function ( resolve , reject ) {
+			try {
+				if ( !this.window_id ) { resolve( false ); return; }
+				await this.refocusWindow();
+				x = x.toString() || "0";
+				y = y.toString() || "0";
+				this.exec( "xdotool mousemove " + x + " " + y );
+				resolve();
+				return;
+			}
+			catch( error ) { console.log( error ); resolve( false ); return; }
+		}.bind( this ) );		;
 	}
 
 	leftClick() {
-		this.refocusWindow();
-		return this.exec( "xdotool click 1" );
+		return new Promise( async function ( resolve , reject ) {
+			try {
+				if ( !this.window_id ) { resolve( false ); return; }
+				await this.refocusWindow();
+				this.exec( "xdotool click 1" );
+				resolve();
+				return;
+			}
+			catch( error ) { console.log( error ); resolve( false ); return; }
+		}.bind( this ) );
 	}
 
 	rightClick() {
-		this.refocusWindow();
-		return this.exec( "xdotool click 2" );
+		return new Promise( async function ( resolve , reject ) {
+			try {
+				if ( !this.window_id ) { resolve( false ); return; }
+				await this.refocusWindow();
+				this.exec( "xdotool click 2" );
+				resolve();
+				return;
+			}
+			catch( error ) { console.log( error ); resolve( false ); return; }
+		}.bind( this ) );
 	}
 
 	doubleClick() {
-		this.refocusWindow();
-		return this.exec( "xdotool click --repeat 2 --delay 200 1" );
+		return new Promise( async function ( resolve , reject ) {
+			try {
+				if ( !this.window_id ) { resolve( false ); return; }
+				await this.refocusWindow();
+				this.exec( "xdotool click --repeat 2 --delay 200 1" );
+				resolve();
+				return;
+			}
+			catch( error ) { console.log( error ); resolve( false ); return; }
+		}.bind( this ) );
 	}
 
 	centerMouse() {
-		if ( !this.window_geometry ) { return; }
-		this.refocusWindow();
-		this.moveMouse( this.window_geometry.center.x , this.window_geometry.center.y );
+		return new Promise( async function ( resolve , reject ) {
+			try {
+				if ( !this.window_id ) { resolve( false ); return; }
+				if ( !this.window_geometry ) { resolve( false ); return; }
+				await this.moveMouse( this.window_geometry.center.x , this.window_geometry.center.y );
+				resolve();
+				return;
+			}
+			catch( error ) { console.log( error ); resolve( false ); return; }
+		}.bind( this ) );
 	}
 
-	pressKeyboardKey( wKey ) {
-		this.refocusWindow();
-		return this.exec( "xdotool key '" + wKey + "'" );
+	pressKeyboardKey( keyboard_key ) {
+		return new Promise( async function ( resolve , reject ) {
+			try {
+				if ( !this.window_id ) { resolve( false ); return; }
+				await this.refocusWindow();
+				this.exec( "xdotool key '" + keyboard_key + "'" );
+				resolve();
+				return;
+			}
+			catch( error ) { console.log( error ); resolve( false ); return; }
+		}.bind( this ) );
 	}
 
 };

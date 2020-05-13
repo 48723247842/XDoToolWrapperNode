@@ -27,25 +27,24 @@ class WindowName extends XDoToolBase {
 		return false;
 	}
 
-	ensureWindowNameIsReady() {
-		return new Promise( async ( resolve , reject ) => {
+	ensureWindowNameIsReady( options = { number_of_tries: 10 , sleep_time: 1000 } ) {
+		return new Promise( async function ( resolve , reject ) {
 			try {
-				let found = false;
-				setTimeout( () => {
-					console.log( `XDoTool-Wrapper --> Ensuring ${ this.window_name } is Ready Timed Out` );
-					resolve( false );
-					return false;
-				} , 10000 );
-				while( !found ) {
-					found = this.searchID();
-					await this.sleep( 1000 );
+				for ( let i = 0; i < options.number_of_tries; ++i ) {
+					const found = this.searchID();
+					if ( found ) {
+						console.log( "XDoTool-Wrapper --> X-Window READY !!! " + this.window_id );
+						resolve( this.window_id );
+						return;
+					}
+					await this.sleep( options.sleep_time );
 				}
-				console.log( "XDoTool-Wrapper --> X-Window READY !!! " + this.window_id );
-				resolve( this.window_id );
-				return;
+				console.log( `XDoTool-Wrapper --> Ensuring ${ this.window_name } is Ready Timed Out` );
+				resolve( false );
+				return false;
 			}
 			catch( error ) { console.log( error ); resolve( false ); return; }
-		});
+		}.bind( this ) );
 	}
 
 };
