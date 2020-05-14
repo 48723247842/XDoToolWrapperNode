@@ -21,6 +21,18 @@ var last_update_time = "";
 var current_time = false;
 var total_time = false;
 var websocket_client = false;
+
+function try_websocket_send( javascript_object ) {
+	try { websocket_client.send( JSON.stringify( javascript_object ) ); }
+	catch( e ) {
+		console.log( e );
+		//start_websocket_client();
+		setTimeout( function() {
+			try_websocket_send( javascript_object );
+		} , 1500 );
+	}
+}
+
 function start_websocket_client() {
 	websocket_client = new WebSocket( "ws://127.0.0.1:10081" );
 	websocket_client.onmessage = function ( message ) {
@@ -32,32 +44,17 @@ function start_websocket_client() {
 		console.log( "Recieved Message from Server" );
 		console.log( recieved );
 		if ( recieved.message === "manual_get_time" ) {
-			try {
-				websocket_client.send( JSON.stringify({
-					channel: "disney_plus" ,
-					message: "manual_time_update" ,
-					current_time: current_time ,
-					total_time: total_time
-				}));
-			}
-			catch( e ) { console.log( e ); }
+			try_websocket_send({
+				channel: "disney_plus" ,
+				message: "manual_time_update" ,
+				current_time: current_time ,
+				total_time: total_time
+			});
 		}
 	}
 	websocket_client.onclose = function() {
 		ws = false;
 		setTimeout( start_websocket_client , 1000 );
-	}
-}
-start_websocket_client();
-
-function try_websocket_send( javascript_object ) {
-	try { websocket_client.send( JSON.stringify( javascript_object ) ); }
-	catch( e ) {
-		console.log( e );
-		start_websocket_client();
-		setTimeout( function() {
-			try_websocket_send( javascript_object );
-		} , 1500 );
 	}
 }
 
@@ -125,15 +122,6 @@ function hook_control_buttons() {
 					last_update_time = current_time;
 					console.log( "Current Time == " + current_time );
 					console.log( "Total Time == " + total_time );
-					// try {
-					// 	websocket_client.send( JSON.stringify({
-					// 		channel: "disney_plus" ,
-					// 		message: "time_update" ,
-					// 		current_time: current_time ,
-					// 		total_time: total_time
-					// 	}));
-					// }
-					// catch( e ) { console.log( e ); }
 					try_websocket_send({
 						channel: "disney_plus" ,
 						message: "time_update" ,
@@ -170,25 +158,11 @@ function hook_control_buttons() {
 		// We Need To Somehow Detect if State == Paused or Playing
 		// 1.) Move Mouse to Center of Screen , if Time Updates Don't Happen , its paused ?
 		// 2.) svg_buttons[ "play" ].click();
-		// try {
-		// 	websocket_client.send( JSON.stringify({
-		// 		channel: "disney_plus" ,
-		// 		message: "mouse_inside_video_window" ,
-		// 	}));
-		// }
-		// catch( e ) { console.log( e ); }
 		try_websocket_send({
 			channel: "disney_plus" ,
 			message: "mouse_inside_video_window" ,
 		});
 	});
-	// try {
-	// 	websocket_client.send( JSON.stringify({
-	// 		channel: "disney_plus" ,
-	// 		message: "agent_ready" ,
-	// 	}));
-	// }
-	// catch( e ) { console.log( e ); }
 	try_websocket_send({
 		channel: "disney_plus" ,
 		message: "agent_ready" ,
@@ -196,6 +170,7 @@ function hook_control_buttons() {
 }
 
 function init() {
+	start_websocket_client();
 	console.log( "We Found .btm-media-overlays-container " );
 	setTimeout( function() {
 		hook_control_buttons();
