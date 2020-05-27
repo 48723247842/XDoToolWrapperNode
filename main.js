@@ -1,6 +1,2 @@
-const xdotoolwrapper = {
-	wrap: {
-		name: require( "./WindowName.js" )
-	}
-};
+const xdotoolwrapper = require( "./WindowName.js" );
 module.exports = xdotoolwrapper;
