@@ -1,5 +1,5 @@
 {
-  "name": "xdotoolwrapperredo",
+  "name": "xdotoolwrapper",
   "version": "1.0.0",
   "description": "",
   "main": "main.js",
@@ -7,6 +7,11 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/48723247842/XDoToolWrapperNode"
+  },
+  "url": "https://github.com/48723247842/XDoToolWrapperNode",
   "license": "ISC",
   "dependencies": {
     "shelljs": "^0.8.4"
