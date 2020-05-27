@@ -1,0 +1,11 @@
+node_modules/
+package-lock.json
+gitPushUpdate.sh
+npmPublish.sh
+DisneyPlusUserScript.js
+temp_websocket_server.py
+test.js
+personal.js
+test.js
+.DS_Store
+.gitignore
